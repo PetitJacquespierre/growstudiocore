@@ -488,11 +488,24 @@ function updateCartUI() {
         totalItems += item.qty;
 
         if (cartItems) {
+            let imgSrc = '';
+            if (item.imagen) {
+                if (item.imagen.startsWith('http://') || item.imagen.startsWith('https://')) {
+                    imgSrc = item.imagen;
+                } else {
+                    imgSrc = `img/${item.imagen}`;
+                }
+            }
+            const imgHtml = imgSrc 
+                ? `<img src="${imgSrc}" alt="${item.nombre}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" onerror="this.style.display='none'">` 
+                : `<div style="width: 50px; height: 50px; background: #222; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #555;"><i class="fa-solid fa-image"></i></div>`;
+
             cartItems.innerHTML += `
-                <div class="cart-item">
-                    <div class="item-info">
-                        <h4>${item.nombre}</h4>
-                        <p>$${itemTotal.toFixed(2)} USD</p>
+                <div class="cart-item" style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    ${imgHtml}
+                    <div class="item-info" style="flex: 1;">
+                        <h4 style="margin: 0; font-size: 0.95rem; color: #fff;">${item.nombre}</h4>
+                        <p style="margin: 3px 0 0 0; color: #aaa; font-size: 0.85rem;">$${itemTotal.toFixed(2)} USD</p>
                     </div>
                     <div class="qty-controls">
                         <button class="qty-btn" onclick="updateQty('${item.id}', -1)">${item.qty === 1 ? '<i class="fa-solid fa-trash-can" style="font-size: 0.9rem;"></i>' : '-'}</button>
