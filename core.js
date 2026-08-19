@@ -23,42 +23,41 @@ document.addEventListener("DOMContentLoaded", async () => {
     const bcvElem = document.getElementById('bcv-value');
     if (bcvElem) bcvElem.innerText = bcvRate.toFixed(2);
 
-    // Mecanismo de Seguridad
+    // Mecanismo de Seguridad: Si tarda mucho, forzamos quitar el splash a los 5 segundos
     const failsafe = setTimeout(() => {
         dismissSplash();
-    }, 8000);
+    }, 5000);
 
     try {
-        // === PASO 1: VERIFICAR ESTADO EN EL CEREBRO CENTRAL ===
-        const isSuspended = await checkSaaSStatus();
+        // Ejecutamos las llamadas al servidor de Google de forma PARALELA para ahorrar muchísimo tiempo
+        const [isSuspended] = await Promise.all([
+            checkSaaSStatus(),
+            fetchMenuData(),
+            fetchBCVRate()
+        ]);
         
         if (isSuspended) {
-            // Si estÃ¡ suspendido por Grow Studio, activamos el Kill Switch y NO cargamos el menÃº
+            // Si está suspendido por Grow Studio, activamos el Kill Switch y NO renderizamos el menú
             clearTimeout(failsafe);
             suspendStoreUI();
             dismissSplash();
             return; 
         }
-
-        // === PASO 2: CARGA NORMAL (Si estÃ¡ activo) ===
-        await Promise.all([
-            fetchMenuData(),
-            fetchBCVRate()
-        ]);
         
+        // Si no está suspendido, pintamos todo
         renderFilters();
         renderMenu();
         renderUpsells();
         
     } catch (e) {
-        console.error("Error crÃ­tico en la carga inicial:", e);
+        console.error("Error crítico en la carga inicial:", e);
     } finally {
         clearTimeout(failsafe);
-        // Esperamos medio segundo adicional para asegurar que las imÃ¡genes empiecen a pintar
+        // Pequeño respiro visual para que el navegador pinte el DOM
         setTimeout(() => {
             dismissSplash();
             initPromoSlider();
-        }, 500);
+        }, 100);
         
         // Registrar PWA Service Worker
         if ('serviceWorker' in navigator) {
