@@ -663,14 +663,15 @@ function sendOrder() {
 
     let subtotal = 0;
     
-    // Usamos \r\n (Carriage Return + Line Feed) para que WhatsApp mÃ³vil respete estrictamente el salto de lÃ­nea
+    // Usamos \r\n (Carriage Return + Line Feed) para que WhatsApp móvil respete estrictamente el salto de línea
     let text = `==========================\r\n`;
-    text += `*NUEVO PEDIDO - THE FOOD POINT*\r\n`;
+    const bName = typeof clientConfig !== 'undefined' && clientConfig.businessName ? clientConfig.businessName.toUpperCase() : "NUEVO PEDIDO";
+    text += `*${bName}*\r\n`;
     text += `==========================\r\n\r\n`;
     
     text += `*DATOS DEL CLIENTE*\r\n`;
     text += `- Cliente: ${name}\r\n`;
-    text += `- DirecciÃ³n: ${address}\r\n`;
+    text += `- Dirección: ${address}\r\n`;
     text += `- Zona: ${deliveryName}\r\n`;
     text += `- Pago: ${paymentMethod}\r\n`;
     
@@ -685,7 +686,7 @@ function sendOrder() {
     cart.forEach(item => {
         const itemTotal = item.precio * item.qty;
         subtotal += itemTotal;
-        text += `â€¢ ${item.qty}x ${item.nombre} ($${itemTotal.toFixed(2)})\r\n`;
+        text += `• ${item.qty}x ${item.nombre} ($${itemTotal.toFixed(2)})\r\n`;
     });
 
     const totalUsd = subtotal + deliveryCost;
@@ -696,12 +697,12 @@ function sendOrder() {
     text += `- Delivery: $${deliveryCost.toFixed(2)}\r\n`;
     text += `*TOTAL A PAGAR: $${totalUsd.toFixed(2)} (${totalBs} Bs)*\r\n\r\n`;
     
-    // Enlace dinÃ¡mico para promocionar la web (se adapta a tu dominio actual)
+    // Enlace dinámico para promocionar la web (se adapta a tu dominio actual)
     const siteUrl = window.location.origin;
-    text += `ðŸ” _Â¿Antojo? Pide tÃº tambiÃ©n rÃ¡pido y fÃ¡cil aquÃ­:_ \r\n`;
-    text += `ðŸ‘‰ ${siteUrl}`;
+    text += `🍔 _¿Antojo? Pide tú también rápido y fácil aquí:_ \r\n`;
+    text += `👉 ${siteUrl}`;
 
-    // Codificamos la URL. encodeURIComponent convierte \r\n en %0D%0A (El salto de lÃ­nea oficial para WhatsApp Mobile)
+    // Codificamos la URL. encodeURIComponent convierte \r\n en %0D%0A (El salto de línea oficial para WhatsApp Mobile)
     const encodedText = encodeURIComponent(text);
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedText}`;
     
