@@ -6,8 +6,8 @@ let WHATSAPP_NUMBER = typeof clientConfig !== 'undefined' && clientConfig.whatsa
 const MENU_API_URL = typeof clientConfig !== 'undefined' ? clientConfig.hojaDeCalculo : "";
 const CLIENT_ID = typeof clientConfig !== 'undefined' ? clientConfig.id : "SIN_ID"; 
 
-// === PANEL CENTRAL GROW STUDIO ===
-const GROW_STUDIO_API_URL = "https://script.google.com/macros/s/AKfycbxQyj-9VTVcBoK_vDRZi1jwzXi-WABzZ1hVuxp0WAE_Gj7TVknm6NOwiEQOHQ2XS-qA/exec";
+// URL MAESTRA DEL PANEL CENTRAL (Para el Kill Switch Global)
+const GROW_STUDIO_API_URL = "URL_DE_TU_GOOGLE_SHEET_MAESTRO_AQUI";
 
 // Bloquea que el navegador recuerde la posiciÃ³n del scroll al recargar
 if ('scrollRestoration' in history) {
@@ -23,10 +23,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const bcvElem = document.getElementById('bcv-value');
     if (bcvElem) bcvElem.innerText = bcvRate.toFixed(2);
 
-    // Mecanismo de Seguridad: Si tarda mucho, forzamos quitar el splash a los 5 segundos
+    // Failsafe de seguridad: Si despuÃ©s de 3 segundos alguna peticiÃ³n falla o es muy lenta, quita el splash para no dejar al cliente atrapado
     const failsafe = setTimeout(() => {
         dismissSplash();
-    }, 5000);
+    }, 3000);
 
     try {
         // Ejecutamos las llamadas al servidor de Google de forma PARALELA para ahorrar muchísimo tiempo
