@@ -610,10 +610,12 @@ function sendOrder() {
     const nameInput = document.getElementById('customer-name');
     const addressInput = document.getElementById('customer-address');
     const notesInput = document.getElementById('customer-notes');
+    const referralInput = document.getElementById('referral-code');
     
     const name = nameInput ? nameInput.value.trim() : '';
     const address = addressInput ? addressInput.value.trim() : '';
     const notes = notesInput ? notesInput.value.trim() : '';
+    const referralCode = referralInput ? referralInput.value.trim() : '';
     
     const deliverySelect = document.getElementById('delivery-zone');
     const deliveryName = deliverySelect ? deliverySelect.options[deliverySelect.selectedIndex].text : 'Delivery';
@@ -677,6 +679,10 @@ function sendOrder() {
     
     if (notes !== '') {
         text += `- Notas: ${notes}\r\n`;
+    }
+    
+    if (referralCode !== '') {
+        text += `- Código Referido: ${referralCode}\r\n`;
     }
     
     text += `\r\n`;
