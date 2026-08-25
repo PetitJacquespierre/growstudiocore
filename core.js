@@ -144,6 +144,11 @@ async function fetchMenuData() {
                 storeStatus = data.tiendaAbierta.toUpperCase(); // Sobrescribe el estado horario
             }
             
+            // Reemplazar WhatsApp si está en Firebase
+            if (data.whatsapp && data.whatsapp.trim() !== "") {
+                WHATSAPP_NUMBER = data.whatsapp.trim();
+            }
+            
             // Filtrar y renderizar Promos (Banners) activos
             if (data.promos && data.promos.length > 0) {
                 const promosActivas = data.promos.filter(p => p.activo && p.activo.toUpperCase() === "SI");
