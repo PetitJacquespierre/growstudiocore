@@ -150,9 +150,9 @@ async function fetchMenuData() {
             }
             
             // Filtrar y renderizar Promos (Banners) activos
-            if (data.promos && data.promos.length > 0) {
+            if (data.promos) {
                 const promosActivas = data.promos.filter(p => p.activo && p.activo.toUpperCase() === "SI");
-                if (promosActivas.length > 0) renderPromos(promosActivas);
+                renderPromos(promosActivas); // Se llama siempre para que limpie el slider si están apagadas
             }
         } else {
             console.error("Cliente no encontrado en Firebase");
@@ -249,25 +249,53 @@ function suspendStoreUI() {
 // =========================================
 let currentPromoIndex = 0;
 function renderPromos(promos) {
-    const container = document.getElementById('promo-carousel');
+    const sliderParent = document.querySelector('.promo-slider-container');
+    const container = document.getElementById('promoSlider');
+    
+    // Si no existen los elementos en el HTML (ej. clientes viejos), no hacemos nada
+    if (!sliderParent && !container) return;
+    
+    // Si la estructura vieja era con track
+    const oldContainer = document.getElementById('promo-carousel');
     const track = document.getElementById('carousel-track');
-    if (!container || !track) return;
     
-    container.style.display = 'block';
-    track.innerHTML = '';
+    if (promos.length === 0) {
+        if (sliderParent) sliderParent.style.display = 'none';
+        if (oldContainer) oldContainer.style.display = 'none';
+        return;
+    }
     
-    promos.forEach(promo => {
-        const img = document.createElement('img');
-        img.src = `img/${promo.imagen}`;
-        img.onerror = () => { img.style.display = 'none'; };
-        track.appendChild(img);
-    });
+    // Para la estructura NUEVA (como Demo_Menu_Digital)
+    if (container && sliderParent) {
+        sliderParent.style.display = 'block';
+        container.innerHTML = '';
+        
+        promos.forEach(promo => {
+            const div = document.createElement('div');
+            div.className = 'promo-slide';
+            let imgSrc = promo.imagen.startsWith('http') ? promo.imagen : `img/${promo.imagen}`;
+            div.innerHTML = `<img src="${imgSrc}" alt="Promo">`;
+            container.appendChild(div);
+        });
+    } 
+    // Para la estructura VIEJA (si existe en otros HTML)
+    else if (oldContainer && track) {
+        oldContainer.style.display = 'block';
+        track.innerHTML = '';
+        
+        promos.forEach(promo => {
+            const img = document.createElement('img');
+            img.src = promo.imagen.startsWith('http') ? promo.imagen : `img/${promo.imagen}`;
+            img.onerror = () => { img.style.display = 'none'; };
+            track.appendChild(img);
+        });
 
-    if (promos.length > 1) {
-        setInterval(() => {
-            currentPromoIndex = (currentPromoIndex + 1) % promos.length;
-            track.style.transform = `translateX(-${currentPromoIndex * 100}%)`;
-        }, 4000);
+        if (promos.length > 1) {
+            setInterval(() => {
+                currentPromoIndex = (currentPromoIndex + 1) % promos.length;
+                track.style.transform = `translateX(-${currentPromoIndex * 100}%)`;
+            }, 4000);
+        }
     }
 }
 
