@@ -131,10 +131,24 @@ async function fetchMenuData() {
         
         if (docSnap.exists()) {
             const data = docSnap.data();
-            products = data.productos || [];
+            
+            // Filtrar solo los productos activos
+            const todosLosProductos = data.productos || [];
+            products = todosLosProductos.filter(p => !p.activo || p.activo.toUpperCase() === "SI");
+            
+            // Estado SaaS (Suspendido por falta de pago)
             storeStatus = data.estado || "ACTIVO";
             
-            if (data.promos && data.promos.length > 0) renderPromos(data.promos);
+            // Estado Horario Tienda (ABIERTO, CERRADO, AUTO)
+            if (data.tiendaAbierta && data.tiendaAbierta.toUpperCase() !== "AUTO") {
+                storeStatus = data.tiendaAbierta.toUpperCase(); // Sobrescribe el estado horario
+            }
+            
+            // Filtrar y renderizar Promos (Banners) activos
+            if (data.promos && data.promos.length > 0) {
+                const promosActivas = data.promos.filter(p => p.activo && p.activo.toUpperCase() === "SI");
+                if (promosActivas.length > 0) renderPromos(promosActivas);
+            }
         } else {
             console.error("Cliente no encontrado en Firebase");
         }
