@@ -99,27 +99,8 @@ function initPromoSlider() {
 }
 
 async function checkSaaSStatus() {
-    // Si aÃºn no has puesto tu URL maestra, salta este paso para evitar errores
-    if (!GROW_STUDIO_API_URL || GROW_STUDIO_API_URL.includes("URL_DE_")) {
-        return false; 
-    }
-    
-    try {
-        const response = await fetch(GROW_STUDIO_API_URL);
-        const data = await response.json();
-        
-        if (data && data.clientes) {
-            const miCliente = data.clientes.find(c => c.id === CLIENT_ID);
-            // Verifica si en el master el estado dice SUSPENDIDO
-            if (miCliente && miCliente.estado.toUpperCase() === "SUSPENDIDO") {
-                return true;
-            }
-        }
-        return false;
-    } catch (e) {
-        console.error("No se pudo conectar con el Panel Central de Grow Studio:", e);
-        return false; // Por seguridad, si falla tu Excel maestro, no le apaga la web al cliente
-    }
+    // Ya no es necesario, el estado se chequea directo en Firebase al traer los productos
+    return false;
 }
 
 function dismissSplash() {
@@ -137,27 +118,30 @@ let storeStatus = "AUTO";
 
 async function fetchMenuData() {
     try {
-        const response = await fetch(MENU_API_URL);
-        const data = await response.json();
+        // Inicializar Firebase dinámicamente para no romper el HTML viejo
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
+        const { getFirestore, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
         
-        // Compatibilidad con tu API anterior (array) o la nueva (objeto)
-        if (Array.isArray(data)) {
-            products = data;
-        } else if (data && !data.error) {
-            products = data.menu || [];
-            
-            // Compatibilidad con la variable vieja o la nueva
-            if (data.estadoTienda) {
-                storeStatus = data.estadoTienda;
-            } else if (data.tiendaAbierta === false) {
-                storeStatus = "CERRADO";
-            }
+        const app = initializeApp({ projectId: "grow-studio-menus" });
+        const db = getFirestore(app);
+        
+        // Cargar los datos del cliente desde la nueva Base de Datos ultrarrápida
+        const docRef = doc(db, "clientes", CLIENT_ID);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            products = data.productos || [];
+            storeStatus = data.estado || "ACTIVO";
             
             if (data.promos && data.promos.length > 0) renderPromos(data.promos);
+        } else {
+            console.error("Cliente no encontrado en Firebase");
         }
+        
         checkBusinessHours();
     } catch (err) {
-        console.error("Fallo al cargar el menÃº desde Sheets:", err);
+        console.error("Fallo al cargar el menÃº desde Firebase:", err);
     }
 }
 
