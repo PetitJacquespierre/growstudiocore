@@ -143,7 +143,7 @@ async function fetchMenuData() {
             storeStatus = data.estado || "ACTIVO";
             
             // Estado Horario Tienda (ABIERTO, CERRADO, AUTO)
-            if (storeStatus !== "SUSPENDIDO") {
+            if (storeStatus !== "SUSPENDIDO" && storeStatus !== "MOROSO") {
                 if (data.tiendaAbierta && data.tiendaAbierta.toUpperCase() !== "AUTO") {
                     storeStatus = data.tiendaAbierta.toUpperCase(); // Sobrescribe el estado horario solo si no está suspendido
                 }
@@ -174,7 +174,7 @@ async function fetchMenuData() {
 // =========================================
 function checkBusinessHours() {
     // Si fuerzas la suspensiÃ³n por falta de pago (SaaS Kill Switch)
-    if (storeStatus === "SUSPENDIDO") {
+    if (storeStatus === "SUSPENDIDO" || storeStatus === "MOROSO") {
         suspendStoreUI();
         return;
     }
