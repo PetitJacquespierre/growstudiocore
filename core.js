@@ -120,7 +120,7 @@ async function fetchMenuData() {
     try {
         // Inicializar Firebase dinámicamente para no romper el HTML viejo
         const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
-        const { getFirestore, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+        const { getFirestore, doc, getDoc, updateDoc, increment } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
         
         const app = initializeApp({ projectId: "grow-studio-menus" });
         const db = getFirestore(app);
@@ -132,6 +132,9 @@ async function fetchMenuData() {
         if (docSnap.exists()) {
             const data = docSnap.data();
             
+            // Registrar visita
+            updateDoc(docRef, { visitas: increment(1) }).catch(e=>console.log(e));
+            
             // Filtrar solo los productos activos
             const todosLosProductos = data.productos || [];
             products = todosLosProductos.filter(p => !p.activo || p.activo.toUpperCase() === "SI");
@@ -140,8 +143,10 @@ async function fetchMenuData() {
             storeStatus = data.estado || "ACTIVO";
             
             // Estado Horario Tienda (ABIERTO, CERRADO, AUTO)
-            if (data.tiendaAbierta && data.tiendaAbierta.toUpperCase() !== "AUTO") {
-                storeStatus = data.tiendaAbierta.toUpperCase(); // Sobrescribe el estado horario
+            if (storeStatus !== "SUSPENDIDO") {
+                if (data.tiendaAbierta && data.tiendaAbierta.toUpperCase() !== "AUTO") {
+                    storeStatus = data.tiendaAbierta.toUpperCase(); // Sobrescribe el estado horario solo si no está suspendido
+                }
             }
             
             // Reemplazar WhatsApp si está en Firebase
