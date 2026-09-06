@@ -1,7 +1,7 @@
 // Estado de la App
 let products = [];
 let cart = [];
-let bcvRate = 764.35; 
+let bcvRate = parseFloat(localStorage.getItem("bcvRateCache")) || 764.35; 
 let WHATSAPP_NUMBER = typeof clientConfig !== 'undefined' && clientConfig.whatsapp ? clientConfig.whatsapp : "580000000000"; 
 const MENU_API_URL = typeof clientConfig !== 'undefined' ? clientConfig.hojaDeCalculo : "";
 const CLIENT_ID = typeof clientConfig !== 'undefined' ? clientConfig.id : "SIN_ID"; 
@@ -32,9 +32,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Ejecutamos las llamadas al servidor de Google de forma PARALELA para ahorrar muchísimo tiempo
         const [isSuspended] = await Promise.all([
             checkSaaSStatus(),
-            fetchMenuData(),
-            fetchBCVRate()
+            fetchMenuData()
         ]);
+        
+        // ACTUALIZACION EN LA SOMBRA (SWR): Busca la tasa real sin bloquear la carga
+        fetchBCVRate().then((cambio) => {
+            if (cambio) {
+                renderMenu();
+                renderUpsells();
+                updateCart();
+            }
+        });
         
         if (isSuspended) {
             // Si está suspendido por Grow Studio, activamos el Kill Switch y NO renderizamos el menú
@@ -315,17 +323,22 @@ async function fetchBCVRate() {
         const data = await response.json();
         
         if (data && data.usd) {
-            bcvRate = parseFloat(data.usd);
-            console.log("Â¡Divisas BCV en vivo sincronizadas! $: " + bcvRate);
+            const nuevaTasa = parseFloat(data.usd);
+            
+            // Protección contra la tasa de respaldo de Google Apps Script o Binance fallido (0.00)
+            if (nuevaTasa > 10 && nuevaTasa !== bcvRate) {
+                bcvRate = nuevaTasa;
+                localStorage.setItem("bcvRateCache", bcvRate);
+                console.log("¡BCV actualizado en pantalla en 2do plano! $: " + bcvRate);
+                const bcvElem = document.getElementById('bcv-value');
+                if (bcvElem) bcvElem.innerText = bcvRate.toFixed(2);
+                return true; 
+            }
         }
     } catch (error) {
-        console.error("Error al conectar con la API central del BCV, usando tasa de respaldo (" + bcvRate + ").", error);
-    } finally {
-        const bcvElem = document.getElementById('bcv-value');
-        if (bcvElem) {
-            bcvElem.innerText = bcvRate.toFixed(2);
-        }
+        console.error("Error al conectar API BCV, manteniendo tasa cacheada: " + bcvRate, error);
     }
+    return false;
 }
 
 // =========================================
