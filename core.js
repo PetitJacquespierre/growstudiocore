@@ -165,8 +165,9 @@ async function fetchMenuData() {
             // Filtrar y renderizar Promos (Banners) activos
             if (data.promos) {
                 const promosActivas = data.promos.filter(p => p.activo && p.activo.toUpperCase() === "SI");
-                renderPromos(promosActivas); // Se llama siempre para que limpie el slider si están apagadas
+                renderPromos(promosActivas);
             }
+            if (data.headerMedia) renderHeroBanner(data.headerMedia);
         } else {
             console.error("Cliente no encontrado en Firebase");
         }
@@ -840,3 +841,82 @@ document.addEventListener('DOMContentLoaded', () => {
         enableDragToScroll('.promos-container');
     }, 1500);
 });
+
+
+// =========================================
+// RENDERIZADO: HERO BANNER (PORTADA PREMIUM)
+// =========================================
+function renderHeroBanner(mediaUrl) {
+    if (!mediaUrl) return;
+
+    // Prevenir duplicados si se llama dos veces
+    if (document.getElementById('dynamic-hero-banner')) return;
+
+    const header = document.querySelector('header');
+    if (!header) return;
+
+    const heroDiv = document.createElement('div');
+    heroDiv.id = 'dynamic-hero-banner';
+    heroDiv.style.position = 'relative';
+    heroDiv.style.width = '100%';
+    heroDiv.style.height = '45vh'; 
+    heroDiv.style.minHeight = '300px';
+    heroDiv.style.overflow = 'hidden';
+    heroDiv.style.display = 'flex';
+    heroDiv.style.alignItems = 'flex-end';
+    heroDiv.style.justifyContent = 'center';
+    heroDiv.style.paddingBottom = '30px';
+    heroDiv.style.marginTop = '-80px'; // Para quedar debajo del header transparente
+
+    const isVideo = mediaUrl.match(/\.(mp4|webm|ogg)$/i) || mediaUrl.includes('video');
+    
+    if (isVideo) {
+        heroDiv.innerHTML = `
+            <video autoplay loop muted playsinline style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:1;">
+                <source src="${mediaUrl}" type="video/mp4">
+            </video>
+        `;
+    } else {
+        heroDiv.innerHTML = `
+            <div style="position:absolute; top:0; left:0; width:100%; height:100%; background-image:url('${mediaUrl}'); background-size:cover; background-position:center; z-index:1;"></div>
+        `;
+    }
+
+    const overlay = document.createElement('div');
+    overlay.style.position = 'absolute';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.background = 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, var(--bg) 100%)';
+    overlay.style.zIndex = '2';
+    heroDiv.appendChild(overlay);
+
+    const logoContainer = document.querySelector('.logo-container');
+    if (logoContainer) {
+        logoContainer.style.position = 'relative';
+        logoContainer.style.zIndex = '3';
+        
+        const logoImg = logoContainer.querySelector('img');
+        if (logoImg) {
+            logoImg.style.width = '120px';
+            logoImg.style.height = '120px';
+            logoImg.style.objectFit = 'contain';
+            logoImg.style.filter = 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))';
+            logoImg.style.borderRadius = '20px';
+            logoImg.style.background = 'rgba(255,255,255,0.1)';
+            logoImg.style.backdropFilter = 'blur(10px)'; 
+            logoImg.style.padding = '10px';
+            logoImg.style.border = '1px solid rgba(255,255,255,0.2)';
+        }
+        heroDiv.appendChild(logoContainer);
+    }
+
+    header.style.backgroundColor = 'transparent';
+    header.style.position = 'relative';
+    header.style.zIndex = '10';
+    header.style.boxShadow = 'none';
+
+    // Insertar despus del header
+    header.parentNode.insertBefore(heroDiv, header.nextSibling);
+}
