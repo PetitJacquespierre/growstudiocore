@@ -853,6 +853,8 @@ function renderHeroBanner(mediaUrl) {
     if (document.getElementById('dynamic-hero-banner')) return;
 
     const header = document.querySelector('header');
+    const oldHero = document.querySelector('.hero');
+    if (oldHero) oldHero.style.display = 'none';
     if (!header) return;
 
     const heroDiv = document.createElement('div');
