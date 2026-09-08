@@ -162,6 +162,36 @@ async function fetchMenuData() {
                 WHATSAPP_NUMBER = data.whatsapp.trim();
             }
             
+            // Reemplazar Instagram si está en Firebase
+            const igCard = document.querySelector('.instagram-card');
+            if (igCard) {
+                if (data.instagram && data.instagram.trim() !== "") {
+                    let igValue = data.instagram.trim();
+                    let igUrl = igValue;
+                    let igHandle = igValue;
+
+                    // Formatear URL vs Handle
+                    if (igValue.startsWith('http')) {
+                        // Si pegaron el link completo
+                        const urlObj = new URL(igValue);
+                        // Limpiar el pathname para obtener el usuario (ej: instagram.com/usuario/)
+                        let pathSegments = urlObj.pathname.split('/').filter(s => s !== "");
+                        igHandle = pathSegments.length > 0 ? "@" + pathSegments[0] : "@instagram";
+                    } else {
+                        // Si pusieron @usuario o usuario
+                        igHandle = igValue.startsWith('@') ? igValue : "@" + igValue;
+                        igUrl = `https://instagram.com/${igHandle.substring(1)}`;
+                    }
+
+                    igCard.href = igUrl;
+                    const handleElem = igCard.querySelector('.ig-handle');
+                    if (handleElem) handleElem.innerText = igHandle;
+                    igCard.style.display = 'flex';
+                } else {
+                    igCard.style.display = 'none';
+                }
+            }
+
             // Filtrar y renderizar Promos (Banners) activos
             if (data.promos) {
                 const promosActivas = data.promos.filter(p => p.activo && p.activo.toUpperCase() === "SI");
