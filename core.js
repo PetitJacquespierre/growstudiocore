@@ -897,10 +897,12 @@ function renderHeroBanner(mediaUrl) {
     heroDiv.style.display = 'flex';
     heroDiv.style.alignItems = 'flex-end';
     heroDiv.style.justifyContent = 'center';
-    heroDiv.style.paddingBottom = '30px';
+    heroDiv.style.paddingBottom = '20px'; // Bajar un poco (menos padding bottom)
     heroDiv.style.marginTop = '-80px'; // Para quedar debajo del header transparente
 
     const isVideo = mediaUrl.match(/\.(mp4|webm|ogg)$/i) || mediaUrl.includes('video');
+    const headerLogoImg = document.getElementById('header-logo');
+    const logoSrc = headerLogoImg ? headerLogoImg.src : 'img/logo.png';
     
     if (isVideo) {
         heroDiv.innerHTML = `
@@ -924,24 +926,28 @@ function renderHeroBanner(mediaUrl) {
     overlay.style.zIndex = '2';
     heroDiv.appendChild(overlay);
 
-    const logoContainer = document.querySelector('.logo-container');
-    if (logoContainer) {
-        logoContainer.style.position = 'relative';
-        logoContainer.style.zIndex = '3';
+    if (isVideo) {
+        // Logo en el medio, bajado un poco
+        const centerLogo = document.createElement('img');
+        centerLogo.src = logoSrc;
+        centerLogo.style.position = 'relative';
+        centerLogo.style.zIndex = '3';
+        centerLogo.style.width = '120px';
+        centerLogo.style.height = '120px';
+        centerLogo.style.objectFit = 'contain';
+        centerLogo.style.filter = 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))';
+        centerLogo.style.borderRadius = '20px';
+        centerLogo.style.background = 'rgba(255,255,255,0.1)';
+        centerLogo.style.backdropFilter = 'blur(10px)'; 
+        centerLogo.style.padding = '10px';
+        centerLogo.style.border = '1px solid rgba(255,255,255,0.2)';
+        centerLogo.style.marginBottom = '-20px'; // Bajarlo un cuarto visualmente
         
-        const logoImg = logoContainer.querySelector('img');
-        if (logoImg) {
-            logoImg.style.width = '120px';
-            logoImg.style.height = '120px';
-            logoImg.style.objectFit = 'contain';
-            logoImg.style.filter = 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))';
-            logoImg.style.borderRadius = '20px';
-            logoImg.style.background = 'rgba(255,255,255,0.1)';
-            logoImg.style.backdropFilter = 'blur(10px)'; 
-            logoImg.style.padding = '10px';
-            logoImg.style.border = '1px solid rgba(255,255,255,0.2)';
-        }
-        heroDiv.appendChild(logoContainer);
+        heroDiv.appendChild(centerLogo);
+        if (headerLogoImg) headerLogoImg.style.display = 'none'; // Ocultar el del header
+    } else {
+        // Si es imagen, forzar que el logo aparezca arriba a la izquierda
+        if (headerLogoImg) headerLogoImg.style.display = 'block';
     }
 
     header.style.backgroundColor = 'transparent';
@@ -949,6 +955,5 @@ function renderHeroBanner(mediaUrl) {
     header.style.zIndex = '10';
     header.style.boxShadow = 'none';
 
-    // Insertar despus del header
     header.parentNode.insertBefore(heroDiv, header.nextSibling);
 }
