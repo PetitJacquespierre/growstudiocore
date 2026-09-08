@@ -951,9 +951,22 @@ function renderHeroBanner(mediaUrl) {
     }
 
     header.style.backgroundColor = 'transparent';
-    header.style.position = 'relative';
-    header.style.zIndex = '10';
+    header.style.position = 'sticky';
+    header.style.top = '0';
+    header.style.zIndex = '100';
     header.style.boxShadow = 'none';
+    header.style.transition = 'background-color 0.3s ease';
+
+    // Hacer que el header gane fondo al scrollear para que no se mezcle con los productos
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            header.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
+            header.style.boxShadow = '0 4px 20px rgba(0,0,0,0.8)';
+        } else {
+            header.style.backgroundColor = 'transparent';
+            header.style.boxShadow = 'none';
+        }
+    });
 
     header.parentNode.insertBefore(heroDiv, header.nextSibling);
 }
