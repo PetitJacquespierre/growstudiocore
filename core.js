@@ -1,4 +1,4 @@
-﻿// Estado de la App
+// Estado de la App
 let products = [];
 let cart = [];
 let bcvRate = parseFloat(localStorage.getItem("bcvRateCache")) || 764.35; 
@@ -577,22 +577,35 @@ function renderMenu() {
 function renderUpsells() {
     const upsellContainer = document.querySelector('.upsell-container');
     if (!upsellContainer) return;
-    
-    let html = '';
-    
-    const extras = [
-        { id: 'extra_huevo', nombre: 'Huevo', precio: 0.50 },
-        { id: 'extra_maiz', nombre: 'Maíz', precio: 0.50 },
-        { id: 'extra_tocineta', nombre: 'Tocineta', precio: 1.00 },
-        { id: 'extra_quesokraft', nombre: 'Queso Kraft', precio: 1.00 },
-        { id: 'extra_pepinillo', nombre: 'Pepinillo', precio: 0.50 }
-    ];
 
+    // Leer dinámicamente desde los productos de Firebase
+    // Cualquier producto en categoría "Extras" o "Bebidas" aparece aquí automáticamente
+    const UPSELL_CATEGORIES = ['Extras', 'Bebidas', 'extras', 'bebidas', 'Extra', 'Bebida'];
+    
+    const upsellProducts = products.filter(p => 
+        p.activo !== 'NO' && UPSELL_CATEGORIES.includes(p.categoria)
+    );
+
+    // Fallback: si el cliente no tiene productos con esas categorías, usar los del config.js
+    const extras = upsellProducts.length > 0
+        ? upsellProducts
+        : (typeof clientConfig !== 'undefined' && clientConfig.extras ? clientConfig.extras : []);
+
+    if (extras.length === 0) {
+        upsellContainer.innerHTML = '';
+        return;
+    }
+
+    let html = '';
     extras.forEach(extra => {
-        html += `<button class="upsell-btn" onclick="addToCart({id: '${extra.id}', nombre: 'Extra ${extra.nombre}', precio: ${extra.precio}})">
-            + ${extra.nombre} ($${extra.precio.toFixed(2)})
+        const id = extra.id || 'extra_' + extra.nombre.toLowerCase().replace(/\s+/g, '_');
+        const esBebida = extra.categoria === 'Bebidas' || extra.categoria === 'bebidas' || extra.esBebida;
+        const prefix = esBebida ? '🥤' : '+';
+        html += `<button class="upsell-btn" onclick="addToCart({id: '${id}', nombre: '${extra.nombre}', precio: ${extra.precio}, imagen: '${extra.imagen || ''}', categoria: '${extra.categoria || 'Extras'}', descripcion: '${extra.descripcion || ''}'})">
+            ${prefix} ${extra.nombre} ($${parseFloat(extra.precio).toFixed(2)})
         </button>`;
     });
+
     
     upsellContainer.innerHTML = html;
 }
