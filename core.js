@@ -666,7 +666,7 @@ function copyToClipboard(elementId, btn) {
         const originalIcon = btn.innerHTML;
         btn.innerHTML = '<i class="fa-solid fa-check text-yellow"></i> Copiado';
         btn.classList.add('copied');
-        btn.style.color = "#4ade80"; // Color verde Ã©xito
+        btn.style.color = "#4ade80"; // Color verde éxito
         
         setTimeout(() => {
             btn.innerHTML = originalIcon;
@@ -676,6 +676,28 @@ function copyToClipboard(elementId, btn) {
     }).catch(err => {
         console.error('Error al copiar: ', err);
     });
+}
+
+function copyAllPagoMovil(btn) {
+    const phone = document.getElementById('pm-phone') ? document.getElementById('pm-phone').innerText : '';
+    const id = document.getElementById('pm-id') ? document.getElementById('pm-id').innerText : '';
+    const bank = document.getElementById('pm-bank') ? document.getElementById('pm-bank').innerText : '';
+    const amount = document.getElementById('pm-amount') ? document.getElementById('pm-amount').innerText : '';
+    
+    const textToCopy = `Datos de Pago Móvil:\nBanco: ${bank}\nTeléfono: ${phone}\nCédula: ${id}\nMonto: ${amount}`;
+    
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check text-yellow"></i> ¡TODOS LOS DATOS COPIADOS!';
+        btn.style.color = "#4ade80";
+        btn.style.borderColor = "#4ade80";
+        
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.style.color = "";
+            btn.style.borderColor = "";
+        }, 3000);
+    }).catch(err => console.error('Error al copiar todos los datos: ', err));
 }
 
 // =========================================
@@ -715,18 +737,13 @@ function sendOrder() {
         if(nameInput) nameInput.classList.remove('input-error');
     }
     
-    if (!address && !isRetiro) {
-        if(addressInput) addressInput.classList.add('input-error');
-        isValid = false;
-    } else {
-        if(addressInput) addressInput.classList.remove('input-error');
-    }
+    // Dirección ya no es obligatoria según solicitud del cliente
+    if(addressInput) addressInput.classList.remove('input-error');
 
     if (!isValid) {
-        // Removemos las clases despuÃ©s de que termine la animaciÃ³n (0.4s) para que pueda volver a vibrar si se equivoca de nuevo
+        // Removemos las clases despuÃ©s de que termine la animaciÃ³n (0.4s)
         setTimeout(() => {
             if(nameInput) nameInput.classList.remove('input-error');
-            if(addressInput) addressInput.classList.remove('input-error');
         }, 500);
         
         // Un botÃ³n vibratorio o un texto temporal en el botÃ³n
@@ -753,7 +770,9 @@ function sendOrder() {
     
     text += `*DATOS DEL CLIENTE*\r\n`;
     text += `- Cliente: ${name}\r\n`;
-    text += `- Dirección: ${address}\r\n`;
+    if (address !== '') {
+        text += `- Dirección: ${address}\r\n`;
+    }
     text += `- Zona: ${deliveryName}\r\n`;
     text += `- Pago: ${paymentMethod}\r\n`;
     
