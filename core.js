@@ -650,7 +650,7 @@ function updateCartUI() {
     if (cartItems) cartItems.innerHTML = '';
 
     if (cart.length === 0) {
-        if (cartItems) cartItems.innerHTML = '<p class="empty-cart"><i class="fa-solid fa-basket-shopping fa-2x"></i><br><br>Tu carrito estÃ¡ vacÃ­o.</p>';
+        if (cartItems) cartItems.innerHTML = '<p class="empty-cart"><i class="fa-solid fa-basket-shopping fa-2x"></i><br><br>Tu carrito está vacío.</p>';
         if (fabCount) fabCount.innerText = "0";
         if (fabTotalUsd) fabTotalUsd.innerText = "$0.00";
         if (fabTotalBs) fabTotalBs.innerText = "0.00 Bs";
