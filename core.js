@@ -319,6 +319,46 @@ function renderPromos(promos) {
             div.className = 'promo-slide';
             let imgSrc = promo.imagen.startsWith('http') ? promo.imagen : `img/${promo.imagen}`;
             div.innerHTML = `<img src="${imgSrc}" alt="Promo">`;
+            
+            // Intento 1: usar producto_id explícito de Firebase
+            let targetId = promo.producto_id || promo.productoId;
+            
+            // Intento 2 (Truco Mágico): Inferir el ID del producto basado en el nombre de la imagen
+            if (!targetId) {
+                const imageName = promo.imagen.split('/').pop().split('.')[0]; 
+                const matchedProduct = products.find(p => String(p.id).toLowerCase() === imageName.toLowerCase());
+                if (matchedProduct) {
+                    targetId = matchedProduct.id;
+                }
+            }
+            
+            // Intento 3 (Producto Virtual): Si llenaron Nombre y Precio directamente en la tabla de Promos
+            if (!targetId && promo.nombre && parseFloat(promo.precio) > 0) {
+                targetId = {
+                    id: 'promo_' + promo.imagen, // ID único basado en la imagen para poder sumar cantidades
+                    nombre: promo.nombre,
+                    descripcion: promo.descripcion || '',
+                    precio: parseFloat(promo.precio),
+                    imagen: promo.imagen,
+                    categoria: 'Promociones'
+                };
+            }
+            
+            if (targetId) {
+                div.style.cursor = 'pointer';
+                div.onclick = () => {
+                    addToCart(targetId);
+                    const fab = document.getElementById('cart-fab');
+                    if(fab) fab.click(); // Abre el carrito
+                };
+            } else {
+                div.style.cursor = 'pointer';
+                div.onclick = () => {
+                    const grid = document.getElementById('menu-grid');
+                    if(grid) grid.scrollIntoView({behavior: 'smooth'});
+                };
+            }
+
             container.appendChild(div);
         });
     } 
@@ -331,6 +371,43 @@ function renderPromos(promos) {
             const img = document.createElement('img');
             img.src = promo.imagen.startsWith('http') ? promo.imagen : `img/${promo.imagen}`;
             img.onerror = () => { img.style.display = 'none'; };
+            
+            let targetId = promo.producto_id || promo.productoId;
+            if (!targetId) {
+                const imageName = promo.imagen.split('/').pop().split('.')[0]; 
+                const matchedProduct = products.find(p => String(p.id).toLowerCase() === imageName.toLowerCase());
+                if (matchedProduct) {
+                    targetId = matchedProduct.id;
+                }
+            }
+            
+            // Intento 3 (Producto Virtual): Si llenaron Nombre y Precio directamente en la tabla de Promos
+            if (!targetId && promo.nombre && parseFloat(promo.precio) > 0) {
+                targetId = {
+                    id: 'promo_' + promo.imagen,
+                    nombre: promo.nombre,
+                    descripcion: promo.descripcion || '',
+                    precio: parseFloat(promo.precio),
+                    imagen: promo.imagen,
+                    categoria: 'Promociones'
+                };
+            }
+            
+            if (targetId) {
+                img.style.cursor = 'pointer';
+                img.onclick = () => {
+                    addToCart(targetId);
+                    const fab = document.getElementById('cart-fab');
+                    if(fab) fab.click();
+                };
+            } else {
+                img.style.cursor = 'pointer';
+                img.onclick = () => {
+                    const grid = document.getElementById('menu-grid');
+                    if(grid) grid.scrollIntoView({behavior: 'smooth'});
+                };
+            }
+
             track.appendChild(img);
         });
 
