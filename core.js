@@ -346,6 +346,26 @@ function renderPromos(promos) {
             
             if (targetId) {
                 div.style.cursor = 'pointer';
+                div.style.position = 'relative';
+                
+                const badge = document.createElement('div');
+                badge.innerHTML = '<i class="fa-solid fa-hand-pointer fa-beat"></i> ¡TOCA PARA PEDIR!';
+                badge.style.position = 'absolute';
+                badge.style.bottom = '15px';
+                badge.style.right = '15px';
+                badge.style.backgroundColor = '#fbbf24';
+                badge.style.color = '#000';
+                badge.style.padding = '8px 16px';
+                badge.style.borderRadius = '25px';
+                badge.style.fontWeight = '800';
+                badge.style.fontSize = '12px';
+                badge.style.letterSpacing = '0.5px';
+                badge.style.boxShadow = '0 5px 15px rgba(0,0,0,0.6)';
+                badge.style.zIndex = '10';
+                badge.style.pointerEvents = 'none'; // Evita bloquear el click principal
+                
+                div.appendChild(badge);
+
                 div.onclick = () => {
                     addToCart(targetId);
                     const fab = document.getElementById('cart-fab');
