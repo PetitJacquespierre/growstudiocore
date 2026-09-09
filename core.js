@@ -1,4 +1,4 @@
-// Estado de la App
+﻿// Estado de la App
 let products = [];
 let cart = [];
 let bcvRate = parseFloat(localStorage.getItem("bcvRateCache")) || 764.35; 
@@ -810,7 +810,7 @@ function copyAllPagoMovil(btn) {
 // =========================================
 function sendOrder() {
     if (cart.length === 0) {
-        alert("Â¡Tu carrito estÃ¡ vacÃ­o! Agrega algunas hamburguesas o perros calientes primero.");
+        alert("¡Tu carrito está vacío! Agrega algunas hamburguesas o perros calientes primero.");
         return;
     }
 
