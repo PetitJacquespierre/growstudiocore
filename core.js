@@ -197,7 +197,15 @@ async function fetchMenuData() {
                 const promosActivas = data.promos.filter(p => p.activo && p.activo.toUpperCase() === "SI");
                 renderPromos(promosActivas);
             }
-            if (data.headerMedia) renderHeroBanner(data.headerMedia);
+            
+            // Lógica de la Portada (Hero)
+            if (data.headerMedia && data.headerMedia.trim() !== '') {
+                renderHeroBanner(data.headerMedia);
+            } else {
+                // Si el cliente borró la portada en el Admin, ocultamos también el Hero hardcodeado local
+                const oldHero = document.querySelector('.hero');
+                if (oldHero) oldHero.style.display = 'none';
+            }
         } else {
             console.error("Cliente no encontrado en Firebase");
         }
