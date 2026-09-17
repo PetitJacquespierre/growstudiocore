@@ -1,7 +1,7 @@
 // Estado de la App
 let products = [];
 let cart = [];
-let bcvRate = parseFloat(localStorage.getItem("bcvRateCache")) || 764.35; 
+let bcvRate = parseFloat(localStorage.getItem("bcvRateCache")) || 848.55; 
 let WHATSAPP_NUMBER = typeof clientConfig !== 'undefined' && clientConfig.whatsapp ? clientConfig.whatsapp : "580000000000"; 
 const MENU_API_URL = typeof clientConfig !== 'undefined' ? clientConfig.hojaDeCalculo : "";
 const CLIENT_ID = typeof clientConfig !== 'undefined' ? clientConfig.id : "SIN_ID"; 
@@ -140,8 +140,12 @@ async function fetchMenuData() {
         if (docSnap.exists()) {
             const data = docSnap.data();
             
-            // Registrar visita
-            updateDoc(docRef, { visitas: increment(1) }).catch(e=>console.log(e));
+            // INYECCIÓN DE SEO: Generar Schema dinámico para Google
+            inyectarSEOLocal(data);
+            
+            // Registrar visita (total + mes actual)
+            const _mesKey = 'vis_' + new Date().toISOString().slice(0, 7).replace('-', '_'); // ej: vis_2026_09
+            updateDoc(docRef, { visitas: increment(1), [_mesKey]: increment(1) }).catch(e=>console.log(e));
             
             // Filtrar solo los productos activos
             const todosLosProductos = data.productos || [];
@@ -451,7 +455,9 @@ function renderPromos(promos) {
 // =========================================
 // FETCH: TASA BCV EN VIVO (Scraping API BCV)
 // =========================================
-const URL_API_DIVISAS_BCV = "https://script.google.com/macros/s/AKfycbwsoD8ahtAQUqfY0TQWf3-dDs29HL8kEJa2t-mjDR3PAo3exTTmtSwXqYuNB2ob5dFpgw/exec";
+const URL_API_DIVISAS_BCV = (typeof clientConfig !== 'undefined' && clientConfig.urlApiBCV) 
+    ? clientConfig.urlApiBCV 
+    : "https://script.google.com/macros/s/AKfycbxdQlLO7lDOAvbhFqwVBs722T_i1KQ08z1gdf4NdqA6HvVcwGzRX4BZtHSd58piGL11/exec";
 
 async function fetchBCVRate() {
     try {
@@ -1106,4 +1112,27 @@ function renderHeroBanner(mediaUrl) {
     });
 
     header.parentNode.insertBefore(heroDiv, header.nextSibling);
+}
+
+// =========================================
+// MOTOR DE SEO LOCAL (Inyectado por Grow Studio)
+// =========================================
+function inyectarSEOLocal(datosCliente) {
+    if (document.getElementById('seo-schema')) return;
+    const schema = {
+        "@context": "https://schema.org",
+        "@type": "Restaurant",
+        "name": datosCliente.businessName || "Restaurante",
+        "image": datosCliente.headerMedia || "",
+        "telephone": datosCliente.whatsapp || "",
+        "servesCuisine": "Comida Local",
+        "menu": window.location.href,
+        "url": window.location.href
+    };
+    const script = document.createElement('script');
+    script.id = 'seo-schema';
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(schema);
+    document.head.appendChild(script);
+    console.log("🚀 SEO Local Inyectado Exitosamente por Grow Studio Core");
 }
