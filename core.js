@@ -1,7 +1,7 @@
 // Estado de la App
 let products = [];
 let cart = [];
-let bcvRate = parseFloat(localStorage.getItem("bcvRateCache")) || 848.55; 
+let bcvRate = parseFloat(localStorage.getItem("bcvRateCache_v3")) || 914.02; 
 let WHATSAPP_NUMBER = typeof clientConfig !== 'undefined' && clientConfig.whatsapp ? clientConfig.whatsapp : "580000000000"; 
 const MENU_API_URL = typeof clientConfig !== 'undefined' ? clientConfig.hojaDeCalculo : "";
 const CLIENT_ID = typeof clientConfig !== 'undefined' ? clientConfig.id : "SIN_ID"; 
@@ -453,28 +453,27 @@ function renderPromos(promos) {
 }
 
 // =========================================
-// FETCH: TASA BCV EN VIVO (Scraping API BCV)
+// FETCH: TASA BCV EN VIVO (Motor Directo bcv.org.ve)
 // =========================================
-const URL_API_DIVISAS_BCV = (typeof clientConfig !== 'undefined' && clientConfig.urlApiBCV) 
-    ? clientConfig.urlApiBCV 
-    : "https://script.google.com/macros/s/AKfycbxdQlLO7lDOAvbhFqwVBs722T_i1KQ08z1gdf4NdqA6HvVcwGzRX4BZtHSd58piGL11/exec";
+const URL_API_DIVISAS_BCV = "https://admin-growstudio.vercel.app/api/bcv";
 
 async function fetchBCVRate() {
     try {
-        const response = await fetch(URL_API_DIVISAS_BCV);
+        const response = await fetch(URL_API_DIVISAS_BCV, { cache: "no-store" });
         const data = await response.json();
         
         if (data && data.usd) {
             const nuevaTasa = parseFloat(data.usd);
             
-            // Protección contra la tasa de respaldo de Google Apps Script o Binance fallido (0.00)
-            if (nuevaTasa > 10 && nuevaTasa !== bcvRate) {
+            if (nuevaTasa > 10) {
+                const changed = nuevaTasa !== bcvRate;
                 bcvRate = nuevaTasa;
+                localStorage.setItem("bcvRateCache_v3", bcvRate);
                 localStorage.setItem("bcvRateCache", bcvRate);
-                console.log("¡BCV actualizado en pantalla en 2do plano! $: " + bcvRate);
+                console.log("¡BCV actualizado desde bcv.org.ve! $: " + bcvRate);
                 const bcvElem = document.getElementById('bcv-value');
                 if (bcvElem) bcvElem.innerText = bcvRate.toFixed(2);
-                return true; 
+                return changed || true; 
             }
         }
     } catch (error) {
